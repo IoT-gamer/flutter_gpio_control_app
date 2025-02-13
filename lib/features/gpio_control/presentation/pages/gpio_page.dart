@@ -82,7 +82,10 @@ class GPIOPage extends StatelessWidget {
   void _showAddPinDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => const AddPinDialog(),
+      builder: (_) => BlocProvider.value(
+        value: context.read<GPIOCubit>(),
+        child: const AddPinDialog(),
+      ),
     );
   }
 }
