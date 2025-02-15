@@ -27,6 +27,7 @@ class GPIOCubit extends Cubit<GPIOState> {
         GPIOConfig(
           direction: isInput ? GPIODirection.input : GPIODirection.output,
           label: label,
+          chip: 0, // Default to chip 0 if no config provided
         );
 
     final result = await setupPin(
@@ -40,6 +41,7 @@ class GPIOCubit extends Cubit<GPIOState> {
     if (result) {
       final newPin = GPIOPin(
         pinNumber: pinNumber,
+        chipNumber: effectiveConfig.chip, // Include chip number in pin
         isInput: isInput,
         label: label,
         value: false,
@@ -52,7 +54,7 @@ class GPIOCubit extends Cubit<GPIOState> {
     } else {
       emit(state.copyWith(
         isLoading: false,
-        error: 'Failed to setup pin $pinNumber',
+        error: 'Failed to setup pin $pinNumber on chip ${effectiveConfig.chip}',
       ));
     }
   }
@@ -60,18 +62,24 @@ class GPIOCubit extends Cubit<GPIOState> {
   Future<void> togglePin(int pinNumber, bool value) async {
     emit(state.copyWith(isLoading: true, error: null));
 
+    final pin = state.pins.firstWhere(
+      (p) => p.pinNumber == pinNumber,
+      orElse: () => throw Exception('Pin not found'),
+    );
+
     final result = await repository.writePin(pinNumber, value);
     if (result) {
-      final updatedPins = state.pins.map((pin) {
-        if (pin.pinNumber == pinNumber) {
+      final updatedPins = state.pins.map((p) {
+        if (p.pinNumber == pinNumber) {
           return GPIOPin(
-            pinNumber: pin.pinNumber,
-            isInput: pin.isInput,
-            label: pin.label,
+            pinNumber: p.pinNumber,
+            chipNumber: pin.chipNumber,
+            isInput: p.isInput,
+            label: p.label,
             value: value,
           );
         }
-        return pin;
+        return p;
       }).toList();
 
       emit(state.copyWith(
@@ -81,23 +89,29 @@ class GPIOCubit extends Cubit<GPIOState> {
     } else {
       emit(state.copyWith(
         isLoading: false,
-        error: 'Failed to write to pin $pinNumber',
+        error: 'Failed to write to pin $pinNumber on chip ${pin.chipNumber}',
       ));
     }
   }
 
   Future<void> readPin(int pinNumber) async {
+    final pin = state.pins.firstWhere(
+      (p) => p.pinNumber == pinNumber,
+      orElse: () => throw Exception('Pin not found'),
+    );
+
     final result = await repository.readPin(pinNumber);
-    final updatedPins = state.pins.map((pin) {
-      if (pin.pinNumber == pinNumber) {
+    final updatedPins = state.pins.map((p) {
+      if (p.pinNumber == pinNumber) {
         return GPIOPin(
-          pinNumber: pin.pinNumber,
-          isInput: pin.isInput,
-          label: pin.label,
+          pinNumber: p.pinNumber,
+          chipNumber: pin.chipNumber,
+          isInput: p.isInput,
+          label: p.label,
           value: result,
         );
       }
-      return pin;
+      return p;
     }).toList();
 
     emit(state.copyWith(pins: updatedPins));
@@ -124,7 +138,8 @@ class GPIOCubit extends Cubit<GPIOState> {
         if (!success) {
           emit(state.copyWith(
             isLoading: false,
-            error: 'Failed to close pin ${pin.pinNumber}',
+            error:
+                'Failed to close pin ${pin.pinNumber} on chip ${pin.chipNumber}',
           ));
           return;
         }
@@ -132,7 +147,7 @@ class GPIOCubit extends Cubit<GPIOState> {
 
       emit(state.copyWith(
         isLoading: false,
-        pins: [], // Clear all pins after successful cleanup
+        pins: [],
       ));
     } catch (e) {
       emit(state.copyWith(

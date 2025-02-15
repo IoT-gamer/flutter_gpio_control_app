@@ -32,6 +32,7 @@ class GPIOConfig {
   final GPIODrive drive;
   final bool inverted;
   final String label;
+  final int chip;
 
   GPIOConfig({
     required this.direction,
@@ -40,5 +41,6 @@ class GPIOConfig {
     this.drive = GPIODrive.default_,
     this.inverted = false,
     this.label = '',
+    this.chip = 0,
   });
 }

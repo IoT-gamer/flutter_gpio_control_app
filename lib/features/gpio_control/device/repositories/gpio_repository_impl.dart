@@ -14,11 +14,11 @@ class GPIORepositoryImpl implements GPIORepository {
       GPIO gpio;
 
       if (config != null) {
-        // Use advanced configuration
+        // Use advanced configuration with chip number
         final peripheryConfig = GPIOConfigMapper.toPeripheryConfig(config);
-        gpio = GPIO.advanced(pinNumber, peripheryConfig);
+        gpio = GPIO.advanced(pinNumber, peripheryConfig, config.chip);
       } else {
-        // Use basic configuration
+        // Use basic configuration with default chip 0
         final direction =
             isInput ? GPIOdirection.gpioDirIn : GPIOdirection.gpioDirOut;
         gpio = GPIO(pinNumber, direction);

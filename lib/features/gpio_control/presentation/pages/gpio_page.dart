@@ -101,10 +101,10 @@ class AddPinDialogState extends State<AddPinDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _pinNumberController;
   late TextEditingController _labelController;
+  late TextEditingController _chipNumberController;
   bool _isInput = true;
   bool _showAdvancedConfig = false;
 
-  // Advanced configuration
   GPIOEdge _selectedEdge = GPIOEdge.none;
   GPIOBias _selectedBias = GPIOBias.default_;
   GPIODrive _selectedDrive = GPIODrive.default_;
@@ -115,6 +115,7 @@ class AddPinDialogState extends State<AddPinDialog> {
     super.initState();
     _pinNumberController = TextEditingController();
     _labelController = TextEditingController();
+    _chipNumberController = TextEditingController(text: '0');
   }
 
   @override
@@ -134,6 +135,20 @@ class AddPinDialogState extends State<AddPinDialog> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a pin number';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _chipNumberController,
+                decoration: const InputDecoration(labelText: 'Chip Number'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a chip number';
                   }
                   if (int.tryParse(value) == null) {
                     return 'Please enter a valid number';
@@ -258,8 +273,14 @@ class AddPinDialogState extends State<AddPinDialog> {
                       drive: _selectedDrive,
                       inverted: _isInverted,
                       label: _labelController.text,
+                      chip: int.parse(_chipNumberController.text),
                     )
-                  : null;
+                  : GPIOConfig(
+                      direction:
+                          _isInput ? GPIODirection.input : GPIODirection.output,
+                      label: _labelController.text,
+                      chip: int.parse(_chipNumberController.text),
+                    );
 
               context.read<GPIOCubit>().setupNewPin(
                     pinNumber: int.parse(_pinNumberController.text),
@@ -280,6 +301,7 @@ class AddPinDialogState extends State<AddPinDialog> {
   void dispose() {
     _pinNumberController.dispose();
     _labelController.dispose();
+    _chipNumberController.dispose();
     super.dispose();
   }
 }
