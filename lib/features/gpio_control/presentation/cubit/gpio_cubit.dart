@@ -114,4 +114,31 @@ class GPIOCubit extends Cubit<GPIOState> {
       return true;
     });
   }
+
+  Future<void> closeAllPins() async {
+    emit(state.copyWith(isLoading: true, error: null));
+
+    try {
+      for (final pin in state.pins) {
+        final success = await repository.closePin(pin.pinNumber);
+        if (!success) {
+          emit(state.copyWith(
+            isLoading: false,
+            error: 'Failed to close pin ${pin.pinNumber}',
+          ));
+          return;
+        }
+      }
+
+      emit(state.copyWith(
+        isLoading: false,
+        pins: [], // Clear all pins after successful cleanup
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        error: 'Error during cleanup: $e',
+      ));
+    }
+  }
 }

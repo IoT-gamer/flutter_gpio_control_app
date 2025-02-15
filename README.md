@@ -2,10 +2,14 @@
 This is a Flutter application for controlling GPIO pins. The application implements clean architecture and uses the `flutter_bloc` package for state management. The application provides a user interface to interact with GPIO pins.
 
 ## Features
-    - Add new GPIO pins (input or output)
-    - Toggle output pins
-    - Monitor input pins
-    - Visual feedback for pin states
+   - Add new GPIO pins (input or output) with advanced configuration options
+   - Toggle output pins
+   - Monitor input pins
+   - Visual feedback for pin states
+   - GPIO pins will be properly closed in these scenarios:
+      - When the app is terminated
+      - When the app is minimized or hidden
+      - When the user explicitly tries to close the app
 
 ## Usage
 - Click the `+` button to add a new pin

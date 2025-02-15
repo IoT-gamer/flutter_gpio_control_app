@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,25 +11,62 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final repository = GPIORepositoryImpl();
+  State<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> {
+  late final GPIORepositoryImpl repository;
+  late final GPIOCubit gpioCubit;
+  late final AppLifecycleListener _lifecycleListener;
+
+  @override
+  void initState() {
+    super.initState();
+    repository = GPIORepositoryImpl();
+    gpioCubit = GPIOCubit(
+      setupPin: SetupPin(repository),
+      repository: repository,
+    )..startPolling();
+
+    _lifecycleListener = AppLifecycleListener(
+      onDetach: () {
+        // Called when the application is detached (terminated)
+        gpioCubit.closeAllPins();
+      },
+      onHide: () {
+        // Called when the app is minimized or hidden
+        gpioCubit.closeAllPins();
+      },
+      onExitRequested: () async {
+        // Called when the user attempts to close the app
+        await gpioCubit.closeAllPins();
+        return AppExitResponse.exit;
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycleListener.dispose();
+    gpioCubit.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
       title: 'GPIO Control',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: BlocProvider(
-        create: (context) => GPIOCubit(
-          setupPin: SetupPin(repository),
-          repository: repository,
-        )..startPolling(),
-        child: GPIOPage(),
+      home: BlocProvider.value(
+        value: gpioCubit,
+        child: const GPIOPage(),
       ),
     );
   }
