@@ -20,7 +20,7 @@ This is a Flutter application for controlling GPIO pins. The application impleme
 - The UI will now show the configuration details in the expanded view of each pin.
 
 ## Screenshots
-- TODO: Add screenshots
+<img src="docs/images/screenshot-1.png" alt="drawing" width="200"/> <img src="docs/images/screenshot-2.png" alt="drawing" width="200"/> <img src="docs/images/screenshot-3.png" alt="drawing" width="200"/>
 
 ## Platform Support
 | Android |  iOS  | MacOS |  Web  | Linux | Windows |
