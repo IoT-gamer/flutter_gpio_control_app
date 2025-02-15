@@ -32,17 +32,39 @@ This is a Flutter application for controlling GPIO pins. The application impleme
 - [dart_periphery](https://pub.dev/packages/dart_periphery): Dart package for controlling GPIO pins.
 
 ## Hardware Requirements
-- A Linux machine with GPIO pins (e.g., Raspberry Pi 4B, 5)
+- A Linux machine with GPIO pins
+   - UI maybe be a bit laggy on Raspberry Pi 4B
+   - Raspberry Pi 5 or more powerful SBC recommended
 - Jumper wires for connecting to GPIO pins
-- External devices to control or monitor (e.g., LEDs, buttons, sensors)
+- External devices to control or monitor (e.g., LEDs, buttons)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Flutter SDK: [Install Flutter](https://flutter.dev/docs/get-started/install)
+- Flutter SDK: [Install Flutter](https://docs.flutter.dev/get-started/install/linux/desktop)
 - Dart SDK: Included with Flutter
 - CMake: Required for building the Linux application
+- gpiod: Required for controlling GPIO pins on Linux
+   - Install the `gpiod` package:
+      ```bash
+      $ sudo apt-get install gpiod
+      ```
+   - Add permissions for GPIO pins:
+      ```bash
+      $ sudo groupadd gpiod
+      $ sudo usermod -aG gpiod ${USER}
+      ``` 
+      ```bash
+      $ sudo nano /etc/udev/rules.d/60-gpiod.rules
+      ```
+      - add the following:
+      ```bash
+      # udev rules for gpio port access through libgpiod
+      SUBSYSTEM=="gpio", KERNEL=="gpiochip*", GROUP="gpiod", MODE="0660"
+      ```
+      - reboot the system
+   
 
 ### Installation
 
